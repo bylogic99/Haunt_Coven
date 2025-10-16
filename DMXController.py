@@ -34,7 +34,7 @@ class DMXController:
 
         if port is None:
             # Default to the primary UART device used for DMX (previously read from env)
-            port = "/dev/serial0"
+            port = '/dev/ttyAMA0'
 
         self._port = port
         self._serial = None
