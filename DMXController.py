@@ -1,4 +1,3 @@
-import os
 import threading
 import time
 import atexit
@@ -34,7 +33,8 @@ class DMXController:
         self.mab_time = mab_time
 
         if port is None:
-            port = os.environ.get("DMX_SERIAL_PORT", "/dev/serial0")
+            # Default to the primary UART device used for DMX (previously read from env)
+            port = "/dev/serial0"
 
         self._port = port
         self._serial = None
