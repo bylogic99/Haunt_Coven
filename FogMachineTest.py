@@ -17,6 +17,9 @@ from DMXController import DMXController
 def print_help():
     print("Commands:")
     print("  set <channel> <value>   # channel: 1-512, value: 0-255")
+    print("  set <ch>=<val>          # also accepted, e.g., set 1=255")
+    print("  set <ch>,<val>          # also accepted, e.g., set 1,255")
+    print("  s   <channel> <value>   # short alias for set")
     print("  get <channel>           # read back last value we sent")
     print("  on <channel> [value]    # default 255 if value omitted")
     print("  off <channel>           # set channel to 0")
@@ -85,15 +88,29 @@ def main():
                 except Exception as exc:
                     print(f"Error: {exc}")
                 continue
-            if cmd == "set":
-                if len(parts) != 3:
-                    print("Usage: set <channel> <value>")
-                    continue
+            if cmd in ("set", "s"):
                 try:
-                    channel = int(parts[1])
-                    value = int(parts[2])
+                    channel = None
+                    value = None
+                    if len(parts) == 3:
+                        channel = int(parts[1])
+                        value = int(parts[2])
+                    else:
+                        # Accept forms like: set 1=255, set 1,255, set 1:255
+                        remainder = line[len(parts[0]):].strip()
+                        for sep in ("=", ",", ":"):
+                            if sep in remainder:
+                                lhs, rhs = remainder.split(sep, 1)
+                                channel = int(lhs.strip())
+                                value = int(rhs.strip())
+                                break
+                    if channel is None or value is None:
+                        print("Usage: set <channel> <value> | set <channel>=<value> | set <channel>,<value>")
+                        continue
                     controller.set_channel(channel, value)
                     print(f"Channel {channel} set to {value}")
+                except ValueError:
+                    print("Channel and value must be integers. Example: set 4 200")
                 except Exception as exc:
                     print(f"Error: {exc}")
                 continue
